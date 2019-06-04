@@ -22,11 +22,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private Context mContext;
     private MainActivity mMainActivity;
 
-    public RecyclerViewAdapter(ArrayList<String> mItemNames, ArrayList<String> mItemPrices, Context mContext, MainActivity mMainActivity) {
+    public RecyclerViewAdapter(ArrayList<String> mItemNames, ArrayList<String> mItemPrices, Context mContext) {
         this.mItemNames = mItemNames;
         this.mItemPrices = mItemPrices;
         this.mContext = mContext;
-        this.mMainActivity = mMainActivity;
+        this.mMainActivity = (MainActivity) mContext;
     }
 
     @NonNull
@@ -37,21 +37,28 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
         Log.d(TAG, "onBindViewHolder: called.");
 
         viewHolder.itemName.setText(mItemNames.get(i));
-        viewHolder.itemPrice.setText(mItemPrices.get(i));
+        viewHolder.itemPrice.setText("$" + mItemPrices.get(i));
+        viewHolder.itemPicker.setMinValue(0);
+        viewHolder.itemPicker.setMaxValue(100);
+        viewHolder.itemPicker.setValue(0);
         viewHolder.itemPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
                 mMainActivity.calculate();
             }
         });
+        viewHolder.itemDelete.setText("X");
         viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                int position = viewHolder.getAdapterPosition();
+                notifyItemRemoved(position);
+                mItemNames.remove(position);
+                mItemPrices.remove(position);
             }
         });
     }
