@@ -19,6 +19,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private ArrayList<String> mItemNames;
     private ArrayList<String> mItemPrices;
+    private ArrayList<NumberPicker> mItemPickers = new ArrayList<>();
     private Context mContext;
     private MainActivity mMainActivity;
 
@@ -27,6 +28,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         this.mItemPrices = mItemPrices;
         this.mContext = mContext;
         this.mMainActivity = (MainActivity) mContext;
+    }
+
+    public ArrayList<NumberPicker> getItemPickers() {
+        return this.mItemPickers;
     }
 
     @NonNull
@@ -51,6 +56,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 mMainActivity.calculate();
             }
         });
+        mItemPickers.add(viewHolder.itemPicker);
         viewHolder.itemDelete.setText("X");
         viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +65,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 notifyItemRemoved(position);
                 mItemNames.remove(position);
                 mItemPrices.remove(position);
+                mItemPickers.remove(position);
+                mMainActivity.calculate();
             }
         });
     }
