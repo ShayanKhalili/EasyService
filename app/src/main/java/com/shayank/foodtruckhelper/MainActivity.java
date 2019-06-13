@@ -1,18 +1,20 @@
 package com.shayank.foodtruckhelper;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.NumberPicker;
+import com.shawnlin.numberpicker.NumberPicker;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     private ArrayList<String> mItemNames = new ArrayList<>();
     private ArrayList<String> mItemPrices = new ArrayList<>();
-    RecyclerViewAdapter recyclerViewAdapter;
+    MenuRecyclerViewAdapter menuRecyclerViewAdapter;
 
     EditText newItemName;
     EditText newItemPrice;
@@ -31,15 +33,16 @@ public class MainActivity extends AppCompatActivity {
     Button clearButton;
     ToggleButton addTaxButton;
 
-    private float totalNoTax = 0;
+    private BigDecimal totalNoTax;
+    private BigDecimal taxRate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.menu);
-        recyclerViewAdapter = new RecyclerViewAdapter(mItemNames, mItemPrices,this);
-        recyclerView.setAdapter(recyclerViewAdapter);
+        menuRecyclerViewAdapter = new MenuRecyclerViewAdapter(mItemNames, mItemPrices,this);
+        recyclerView.setAdapter(menuRecyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         newItemName = findViewById(R.id.new_item_name);
@@ -57,11 +60,16 @@ public class MainActivity extends AppCompatActivity {
         addTaxButton = findViewById(R.id.add_tax_button);
         clearButton = findViewById(R.id.clear_button);
 
+        totalNoTax = new BigDecimal(0);
+        totalNoTax = totalNoTax.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        taxRate = new BigDecimal(1.13);
+        taxRate = taxRate.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+
         addTaxButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    totalText.setText("Total: $" + totalNoTax * 1.13);
+                    totalText.setText("Total: $" + totalNoTax.multiply(taxRate).setScale(2, RoundingMode.HALF_EVEN));
                 } else {
                     totalText.setText("Total: $" + totalNoTax);
                 }
@@ -71,10 +79,10 @@ public class MainActivity extends AppCompatActivity {
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for(NumberPicker picker: recyclerViewAdapter.getItemPickers()) {
+                for(NumberPicker picker: menuRecyclerViewAdapter.getItemPickers()) {
                     picker.setValue(0);
                 }
-                totalNoTax = 0;
+                totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
                 totalText.setText("Total: $0.00");
             }
         });
@@ -93,21 +101,25 @@ public class MainActivity extends AppCompatActivity {
                 calculate();
             }
         });
-        recyclerViewAdapter.notifyItemInserted(mItemNames.size() - 1);
+        menuRecyclerViewAdapter.notifyItemInserted(mItemNames.size() - 1);
+        newItemName.setText("");
+        newItemPrice.setText("");
     }
 
     public void calculate() {
         Log.d(TAG, "calculate: " + mItemNames.size());
-        totalNoTax = 0;
+        totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
         for(int i = 0; i < mItemNames.size(); i++) {
-            float price = Float.parseFloat(mItemPrices.get(i));
-            int quantity = recyclerViewAdapter.getItemPickers().get(i).getValue();
+            BigDecimal price = new BigDecimal(mItemPrices.get(i));
+            price = price.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal quantity = new BigDecimal(menuRecyclerViewAdapter.getItemPickers().get(i).getValue());
+            quantity = quantity.setScale(0, BigDecimal.ROUND_HALF_EVEN);
             Log.d(TAG, "calculate: " + price);
             Log.d(TAG, "calculate: " + quantity);
-            totalNoTax += (price * quantity);
+            totalNoTax = totalNoTax.add(price.multiply(quantity));
         }
         if (addTaxButton.isChecked()) {
-            totalText.setText("Total: $" + totalNoTax * 1.13);
+            totalText.setText("Total: $" + totalNoTax.multiply(taxRate).setScale(2, RoundingMode.HALF_EVEN));
         } else {
             totalText.setText("Total: $" + totalNoTax);
         }

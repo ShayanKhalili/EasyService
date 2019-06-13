@@ -1,21 +1,21 @@
 package com.shayank.foodtruckhelper;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.NumberPicker;
+import com.shawnlin.numberpicker.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
-    private static final String TAG = "RecyclerViewAdapter";
+public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerViewAdapter.ViewHolder> {
+    private static final String TAG = "MenuRecyclerViewAdapter";
 
     private ArrayList<String> mItemNames;
     private ArrayList<String> mItemPrices;
@@ -23,7 +23,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private Context mContext;
     private MainActivity mMainActivity;
 
-    public RecyclerViewAdapter(ArrayList<String> mItemNames, ArrayList<String> mItemPrices, Context mContext) {
+    public MenuRecyclerViewAdapter(ArrayList<String> mItemNames, ArrayList<String> mItemPrices, Context mContext) {
         this.mItemNames = mItemNames;
         this.mItemPrices = mItemPrices;
         this.mContext = mContext;
