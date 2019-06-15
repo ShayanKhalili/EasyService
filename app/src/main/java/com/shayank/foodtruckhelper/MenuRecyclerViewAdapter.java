@@ -19,15 +19,16 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
 
     private ArrayList<String> mItemNames;
     private ArrayList<String> mItemPrices;
-    private ArrayList<NumberPicker> mItemPickers = new ArrayList<>();
+    private ArrayList<NumberPicker> mItemPickers;
     private Context mContext;
-    private MainActivity mMainActivity;
+    private MenuFragment mMenuFragment;
 
-    public MenuRecyclerViewAdapter(ArrayList<String> mItemNames, ArrayList<String> mItemPrices, Context mContext) {
-        this.mItemNames = mItemNames;
-        this.mItemPrices = mItemPrices;
-        this.mContext = mContext;
-        this.mMainActivity = (MainActivity) mContext;
+    public MenuRecyclerViewAdapter(ArrayList<String> itemNames, ArrayList<String> itemPrices, ArrayList<NumberPicker> itemPickers, Context context, MenuFragment menuFragment) {
+        this.mItemNames = itemNames;
+        this.mItemPrices = itemPrices;
+        this.mItemPickers = itemPickers;
+        this.mContext = context;
+        this.mMenuFragment = menuFragment;
     }
 
     public ArrayList<NumberPicker> getItemPickers() {
@@ -53,7 +54,7 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
         viewHolder.itemPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
-                mMainActivity.calculate();
+                mMenuFragment.calculate();
             }
         });
         mItemPickers.add(viewHolder.itemPicker);
@@ -66,7 +67,7 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
                 mItemNames.remove(position);
                 mItemPrices.remove(position);
                 mItemPickers.remove(position);
-                mMainActivity.calculate();
+                mMenuFragment.calculate();
             }
         });
     }
