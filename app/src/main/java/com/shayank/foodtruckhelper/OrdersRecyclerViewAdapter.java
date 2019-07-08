@@ -21,15 +21,15 @@ import java.util.ArrayList;
 public class OrdersRecyclerViewAdapter extends RecyclerView.Adapter<OrdersRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "MenuRecyclerViewAdapter";
 
-    private ArrayList<String> mOrderDetails;
+    private ArrayList<Order> mOrderDetails;
     private ArrayList<Boolean> mOrdersFulfilled;
 
-    private Context mContext;
+    private MainActivity mainActivity;
 
-    public OrdersRecyclerViewAdapter(ArrayList<String> orderDetails, ArrayList<Boolean> ordersFulfilled, Context context) {
+    public OrdersRecyclerViewAdapter(ArrayList<Order> orderDetails, ArrayList<Boolean> ordersFulfilled, Context context) {
         this.mOrderDetails = orderDetails;
         this.mOrdersFulfilled = ordersFulfilled;
-        this.mContext = context;
+        this.mainActivity = (MainActivity) context;
     }
 
     @NonNull
@@ -43,7 +43,7 @@ public class OrdersRecyclerViewAdapter extends RecyclerView.Adapter<OrdersRecycl
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
         Log.d(TAG, "onBindViewHolder: called.");
 
-        viewHolder.orderDetails.setText(mOrderDetails.get(i));
+        viewHolder.orderDetails.setText(mOrderDetails.get(i).getOrderText());
         viewHolder.setOrderFulfilled(mOrdersFulfilled.get(i));
         viewHolder.orderCheckBox.setChecked(mOrdersFulfilled.get(i));
     }
@@ -64,6 +64,7 @@ public class OrdersRecyclerViewAdapter extends RecyclerView.Adapter<OrdersRecycl
             orderCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                    mainActivity.updateOrderFulfillment(getAdapterPosition(), checked);
                     setOrderFulfilled(checked);
                     mOrdersFulfilled.set(getAdapterPosition(), checked);
                 }

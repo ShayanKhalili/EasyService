@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,7 +12,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OrdersFragment extends Fragment {
     private static final String TAG = "OrdersFragment";
@@ -19,8 +22,14 @@ public class OrdersFragment extends Fragment {
     RecyclerView ordersRecyclerView;
     OrdersRecyclerViewAdapter ordersRecyclerViewAdapter;
 
-    ArrayList<String> mOrderDetails = new ArrayList<>();
-    ArrayList<Boolean> mOrdersFulfilled = new ArrayList<>();
+    TextView totalOrdersText;
+
+    MainActivity mainActivity;
+
+    public OrdersFragment(OrdersRecyclerViewAdapter ordersRecyclerViewAdapter, MainActivity mainActivity) {
+        this.ordersRecyclerViewAdapter = ordersRecyclerViewAdapter;
+        this.mainActivity = mainActivity;
+    }
 
     @Nullable
     @Override
@@ -31,14 +40,25 @@ public class OrdersFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         ordersRecyclerView = view.findViewById(R.id.orders_list);
-        ordersRecyclerViewAdapter = new OrdersRecyclerViewAdapter(mOrderDetails, mOrdersFulfilled, getActivity());
         ordersRecyclerView.setAdapter(ordersRecyclerViewAdapter);
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        totalOrdersText = view.findViewById(R.id.total_orders_text);
+        updateTotalOrders();
     }
 
-    public void addOrder(String orderDetails, boolean fulfilled) {
-        this.mOrderDetails.add(orderDetails);
-        this.mOrdersFulfilled.add(fulfilled);
+    public void updateTotalOrders() {
+        StringBuilder totalOrders = new StringBuilder();
+        int i = 0;
+        for (Map.Entry<String, BigDecimal> entry: mainActivity.getTotalItemCount().entrySet()) {
+            totalOrders.append(entry.getValue() + " " + entry.getKey());
+            if (i < mainActivity.getTotalItemCount().size() - 1) {
+                totalOrders.append(", ");
+            }
+            i++;
+        }
+        totalOrdersText.setText(totalOrders.toString());
     }
 }

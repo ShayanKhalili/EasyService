@@ -2,26 +2,23 @@ package com.shayank.foodtruckhelper;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.ClipData;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.shawnlin.numberpicker.NumberPicker;
-import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -29,15 +26,36 @@ public class MainActivity extends AppCompatActivity {
     MenuFragment menuFragment;
     OrdersFragment ordersFragment;
 
+    MenuRecyclerViewAdapter menuRecyclerViewAdapter;
+    OrdersRecyclerViewAdapter ordersRecyclerViewAdapter;
+
     BottomNavigationView bottomNav;
+
+    private ArrayList<String> mItemNames = new ArrayList<>();
+    private ArrayList<String> mItemPrices = new ArrayList<>();
+    private ArrayList<NumberPicker> mItemPickers = new ArrayList<>();
+
+    private ArrayList<Order> mOrderDetails = new ArrayList<>();
+    private ArrayList<Boolean> mOrdersFulfilled = new ArrayList<>();
+
+    private HashMap<String, BigDecimal> totalItemCount = new HashMap<>();
+
+    private BigDecimal totalNoTax;
+    private BigDecimal taxRate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ordersFragment = new OrdersFragment();
-        menuFragment = new MenuFragment(ordersFragment);
+        menuRecyclerViewAdapter = new MenuRecyclerViewAdapter(mItemNames, mItemPrices, mItemPickers, this);
+        menuFragment = new MenuFragment(menuRecyclerViewAdapter, this);
+        ordersRecyclerViewAdapter = new OrdersRecyclerViewAdapter(mOrderDetails, mOrdersFulfilled, this);
+        ordersFragment = new OrdersFragment(ordersRecyclerViewAdapter, this);
+
+
+        totalNoTax = new BigDecimal(0).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        taxRate = new BigDecimal(1.13).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 menuFragment).commit();
@@ -62,5 +80,93 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    protected void addNewMenuItem(String name, String price) {
+        mItemNames.add(name);
+        mItemPrices.add(price);
+        menuRecyclerViewAdapter.notifyItemInserted(mItemNames.size() - 1);
+    }
+
+    public boolean addOrder(String customerName) {
+        Order order = new Order(customerName);
+        for (int i = 0; i < mItemNames.size(); i++) {
+            if (mItemPickers.get(i).getValue() != 0){
+                order.add(mItemNames.get(i), mItemPrices.get(i), mItemPickers.get(i).getValue());
+            }
+        }
+        if (!order.isEmpty()) {
+            mOrderDetails.add(order);
+            mOrdersFulfilled.add(false);
+
+            for (Map.Entry<String, Order.ItemPair> entry: order.getOrderDetails().entrySet()) {
+                if(totalItemCount.containsKey(entry.getKey())) {
+                    totalItemCount.put(entry.getKey(), totalItemCount.get(entry.getKey()).add(entry.getValue().getQuantity()));
+                } else {
+                    totalItemCount.put(entry.getKey(), entry.getValue().getQuantity());
+                }
+            }
+            return true;
+        } else return false;
+    }
+
+    public void calculate() {
+        Log.d(TAG, "calculate: " + mItemNames.size());
+        totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
+        for(int i = 0; i < mItemNames.size(); i++) {
+            BigDecimal price = new BigDecimal(mItemPrices.get(i)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal quantity = new BigDecimal(mItemPickers.get(i).getValue()).setScale(0, BigDecimal.ROUND_HALF_EVEN);
+            Log.d(TAG, "calculate: " + price);
+            Log.d(TAG, "calculate: " + quantity);
+            totalNoTax = totalNoTax.add(price.multiply(quantity));
+        }
+        if (menuFragment.addTaxChecked()) {
+            menuFragment.setTotalText("Total: $" + totalNoTax.multiply(taxRate).setScale(2, RoundingMode.HALF_EVEN));
+        } else {
+            menuFragment.setTotalText("Total: $" + totalNoTax);
+        }
+    }
+
+    public void updateOrderFulfillment(int orderPosition, boolean fulfilled) {
+        mOrdersFulfilled.set(orderPosition, fulfilled);
+        Order order = mOrderDetails.get(orderPosition);
+
+        if (fulfilled) {
+            for (Map.Entry<String, Order.ItemPair> entry: order.getOrderDetails().entrySet()) {
+                totalItemCount.put(entry.getKey(), totalItemCount.get(entry.getKey()).subtract(entry.getValue().getQuantity()));
+                if (totalItemCount.get(entry.getKey()).equals(BigDecimal.ZERO)) {
+                    totalItemCount.remove(entry.getKey());
+                }
+            }
+        } else {
+            for (Map.Entry<String, Order.ItemPair> entry: order.getOrderDetails().entrySet()) {
+                if(totalItemCount.containsKey(entry.getKey())) {
+                    totalItemCount.put(entry.getKey(), totalItemCount.get(entry.getKey()).add(entry.getValue().getQuantity()));
+                } else {
+                    totalItemCount.put(entry.getKey(), entry.getValue().getQuantity());
+                }
+            }
+        }
+
+        ordersFragment.updateTotalOrders();
+    }
+
+    public void clearFields() {
+        for(NumberPicker picker: mItemPickers) {
+            picker.setValue(0);
+        }
+        totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getTotalNoTax() {
+        return totalNoTax;
+    }
+
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public HashMap<String, BigDecimal> getTotalItemCount() {
+        return totalItemCount;
     }
 }

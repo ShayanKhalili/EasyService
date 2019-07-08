@@ -17,22 +17,16 @@ import java.util.ArrayList;
 public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "MenuRecyclerViewAdapter";
 
-    private ArrayList<String> mItemNames;
-    private ArrayList<String> mItemPrices;
-    private ArrayList<NumberPicker> mItemPickers;
-    private Context mContext;
-    private MenuFragment mMenuFragment;
+    private ArrayList<String> itemNames;
+    private ArrayList<String> itemPrices;
+    private ArrayList<NumberPicker> itemPickers;
+    private MainActivity mainActivity;
 
-    public MenuRecyclerViewAdapter(ArrayList<String> itemNames, ArrayList<String> itemPrices, ArrayList<NumberPicker> itemPickers, Context context, MenuFragment menuFragment) {
-        this.mItemNames = itemNames;
-        this.mItemPrices = itemPrices;
-        this.mItemPickers = itemPickers;
-        this.mContext = context;
-        this.mMenuFragment = menuFragment;
-    }
-
-    public ArrayList<NumberPicker> getItemPickers() {
-        return this.mItemPickers;
+    public MenuRecyclerViewAdapter(ArrayList<String> itemNames, ArrayList<String> itemPrices, ArrayList<NumberPicker> itemPickers, Context context) {
+        this.itemNames = itemNames;
+        this.itemPrices = itemPrices;
+        this.itemPickers = itemPickers;
+        this.mainActivity = (MainActivity) context;
     }
 
     @NonNull
@@ -46,35 +40,36 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
         Log.d(TAG, "onBindViewHolder: called.");
 
-        viewHolder.itemName.setText(mItemNames.get(i));
-        viewHolder.itemPrice.setText("$" + mItemPrices.get(i));
+        viewHolder.itemName.setText(itemNames.get(i));
+        viewHolder.itemPrice.setText("$" + itemPrices.get(i));
         viewHolder.itemPicker.setMinValue(0);
         viewHolder.itemPicker.setMaxValue(100);
         viewHolder.itemPicker.setValue(0);
         viewHolder.itemPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
-                mMenuFragment.calculate();
+                mainActivity.calculate();
             }
         });
-        mItemPickers.add(viewHolder.itemPicker);
+        if (itemPickers.size() < i + 1) itemPickers.add(viewHolder.itemPicker);
+        else itemPickers.set(i, viewHolder.itemPicker);
         viewHolder.itemDelete.setText("X");
         viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int position = viewHolder.getAdapterPosition();
                 notifyItemRemoved(position);
-                mItemNames.remove(position);
-                mItemPrices.remove(position);
-                mItemPickers.remove(position);
-                mMenuFragment.calculate();
+                itemNames.remove(position);
+                itemPrices.remove(position);
+                itemPickers.remove(position);
+                mainActivity.calculate();
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return mItemNames.size();
+        return itemNames.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
