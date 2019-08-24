@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.shawnlin.numberpicker.NumberPicker;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> mItemNames = new ArrayList<>();
     private ArrayList<String> mItemPrices = new ArrayList<>();
-    private ArrayList<NumberPicker> mItemPickers = new ArrayList<>();
+    private ArrayList<Integer> mItemCounts = new ArrayList<>();
 
     private ArrayList<Order> mOrderDetails = new ArrayList<>();
     private ArrayList<Boolean> mOrdersFulfilled = new ArrayList<>();
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        menuRecyclerViewAdapter = new MenuRecyclerViewAdapter(mItemNames, mItemPrices, mItemPickers, this);
+        menuRecyclerViewAdapter = new MenuRecyclerViewAdapter(mItemNames, mItemPrices, mItemCounts, this);
         menuFragment = new MenuFragment(menuRecyclerViewAdapter, this);
         ordersRecyclerViewAdapter = new OrdersRecyclerViewAdapter(mOrderDetails, mOrdersFulfilled, this);
         ordersFragment = new OrdersFragment(ordersRecyclerViewAdapter, this);
@@ -91,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean addOrder(String customerName) {
         Order order = new Order(customerName);
         for (int i = 0; i < mItemNames.size(); i++) {
-            if (mItemPickers.get(i).getValue() != 0){
-                order.add(mItemNames.get(i), mItemPrices.get(i), mItemPickers.get(i).getValue());
+            if (mItemCounts.get(i) != 0){
+                order.add(mItemNames.get(i), mItemPrices.get(i), mItemCounts.get(i));
             }
         }
         if (!order.isEmpty()) {
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
         for(int i = 0; i < mItemNames.size(); i++) {
             BigDecimal price = new BigDecimal(mItemPrices.get(i)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-            BigDecimal quantity = new BigDecimal(mItemPickers.get(i).getValue()).setScale(0, BigDecimal.ROUND_HALF_EVEN);
+            BigDecimal quantity = new BigDecimal(mItemCounts.get(i)).setScale(0, BigDecimal.ROUND_HALF_EVEN);
             Log.d(TAG, "calculate: " + price);
             Log.d(TAG, "calculate: " + quantity);
             totalNoTax = totalNoTax.add(price.multiply(quantity));
@@ -152,9 +153,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clearFields() {
-        for(NumberPicker picker: mItemPickers) {
-            picker.setValue(0);
+        for(int i = 0; i < mItemCounts.size(); i++) {
+            mItemCounts.set(i, 0);
         }
+        menuRecyclerViewAdapter.clearCounts();
         totalNoTax = totalNoTax.multiply(BigDecimal.ZERO);
     }
 

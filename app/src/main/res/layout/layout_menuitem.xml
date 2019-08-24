@@ -1,64 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/parent_layout">
+    android:layout_height="wrap_content">
+
     <TextView
         android:id="@+id/menu_item_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
         android:text="Cheeseburger"
         android:textSize="17sp"
-        android:layout_centerVertical="true"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/menu_item_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="$8.00"
-        android:layout_toRightOf="@id/menu_item_name"
-        android:layout_toEndOf="@id/menu_item_name"
-        android:layout_centerVertical="true"
+        android:layout_marginStart="15dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginStart="15dp"/>
+        android:text="$8.00"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/menu_item_name"
+        app:layout_constraintStart_toEndOf="@id/menu_item_name"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <com.shawnlin.numberpicker.NumberPicker
-        android:id="@+id/menu_item_picker"
+    <ImageButton
+        android:id="@+id/menu_count_down"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="down counter button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/menu_count_up"
+        android:background="@android:color/transparent"/>
+
+    <ImageButton
+        android:id="@+id/menu_count_up"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="up counter button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/menu_count_down"
+        app:layout_constraintRight_toLeftOf="@+id/menu_item_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@android:color/transparent"/>
+
+    <TextView
+        android:id="@+id/menu_item_count"
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
-        android:layout_toLeftOf="@id/menu_item_delete"
-        android:layout_toStartOf="@id/menu_item_delete"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="15dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="15dp"
-        app:np_width="64dp"
-        app:np_height="180dp"
-        app:np_dividerColor="@color/colorPrimary"
-        app:np_dividerDistance="30dp"
-        app:np_formatter="%02d"
-        app:np_max="59"
-        app:np_min="0"
-        app:np_selectedTextColor="@color/colorPrimary"
-        app:np_selectedTextSize="15sp"
-        app:np_textColor="@color/colorPrimary"
-        app:np_textSize="15sp"
-        app:np_typeface="sans-serif-light"
-        app:np_value="3"/>
-    
+        android:layout_marginRight="15dp"
+        app:layout_constraintRight_toLeftOf="@id/menu_item_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="0"/>
+
     <Button
         android:id="@+id/menu_item_delete"
         style="@android:style/Widget.Holo.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="15dp"
         android:layout_marginEnd="15dp"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
+        android:layout_marginRight="15dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        tools:text="X"/>
-</RelativeLayout>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="X" />
+</androidx.constraintlayout.widget.ConstraintLayout>

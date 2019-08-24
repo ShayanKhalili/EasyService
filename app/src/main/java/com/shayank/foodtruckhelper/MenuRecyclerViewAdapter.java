@@ -2,15 +2,18 @@ package com.shayank.foodtruckhelper;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import com.shawnlin.numberpicker.NumberPicker;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -19,13 +22,15 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
 
     private ArrayList<String> itemNames;
     private ArrayList<String> itemPrices;
-    private ArrayList<NumberPicker> itemPickers;
+    private ArrayList<Integer> itemCounts;
+    private ArrayList<TextView> itemCountTexts;
     private MainActivity mainActivity;
 
-    public MenuRecyclerViewAdapter(ArrayList<String> itemNames, ArrayList<String> itemPrices, ArrayList<NumberPicker> itemPickers, Context context) {
+    public MenuRecyclerViewAdapter(ArrayList<String> itemNames, ArrayList<String> itemPrices, ArrayList<Integer> itemCounts, Context context) {
         this.itemNames = itemNames;
         this.itemPrices = itemPrices;
-        this.itemPickers = itemPickers;
+        this.itemCounts = itemCounts;
+        this.itemCountTexts = new ArrayList<>();
         this.mainActivity = (MainActivity) context;
     }
 
@@ -42,17 +47,27 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
 
         viewHolder.itemName.setText(itemNames.get(i));
         viewHolder.itemPrice.setText("$" + itemPrices.get(i));
-        viewHolder.itemPicker.setMinValue(0);
-        viewHolder.itemPicker.setMaxValue(100);
-        viewHolder.itemPicker.setValue(0);
-        viewHolder.itemPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+        viewHolder.countUp.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
+            public void onClick(View view) {
+                int pos = viewHolder.getAdapterPosition();
+                itemCounts.set(pos, itemCounts.get(pos) + 1);
+                viewHolder.itemCountText.setText(itemCounts.get(pos).toString());
                 mainActivity.calculate();
             }
         });
-        if (itemPickers.size() < i + 1) itemPickers.add(viewHolder.itemPicker);
-        else itemPickers.set(i, viewHolder.itemPicker);
+        viewHolder.countDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int pos = viewHolder.getAdapterPosition();
+                itemCounts.set(pos, Math.max(itemCounts.get(pos) - 1, 0));
+                viewHolder.itemCountText.setText(itemCounts.get(pos).toString());
+                mainActivity.calculate();
+            }
+        });
+        if (itemCounts.size() < i + 1) itemCounts.add(0);
+        if (itemCountTexts.size() < i + 1) itemCountTexts.add(viewHolder.itemCountText);
+        else itemCountTexts.set(i, viewHolder.itemCountText);
         viewHolder.itemDelete.setText("X");
         viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +76,8 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
                 notifyItemRemoved(position);
                 itemNames.remove(position);
                 itemPrices.remove(position);
-                itemPickers.remove(position);
+                itemCounts.remove(position);
+                itemCountTexts.remove(position);
                 mainActivity.calculate();
             }
         });
@@ -75,17 +91,27 @@ public class MenuRecyclerViewAdapter extends RecyclerView.Adapter<MenuRecyclerVi
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView itemName;
         TextView itemPrice;
-        NumberPicker itemPicker;
+        TextView itemCountText;
+        ImageButton countUp;
+        ImageButton countDown;
         Button itemDelete;
-        RelativeLayout parentLayout;
+        ConstraintLayout parentLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             itemName = itemView.findViewById(R.id.menu_item_name);
             itemPrice = itemView.findViewById(R.id.menu_item_price);
-            itemPicker = itemView.findViewById(R.id.menu_item_picker);
+            itemCountText = itemView.findViewById(R.id.menu_item_count);
+            countUp = itemView.findViewById(R.id.menu_count_up);
+            countDown = itemView.findViewById(R.id.menu_count_down);
             itemDelete = itemView.findViewById(R.id.menu_item_delete);
             parentLayout = itemView.findViewById(R.id.parent_layout);
+        }
+    }
+
+    public void clearCounts() {
+        for (TextView textView: itemCountTexts) {
+            textView.setText("0");
         }
     }
 }
